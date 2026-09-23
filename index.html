@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>for you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#e9dcc3;
+    --paper-shade:#c9a97c;
+    --paper-deep:#a9814f;
+    --ink:#3c2a1e;
+    --card:#fff8ec;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%; margin:0; padding:0;}
+  body{
+    min-height:100%;
+    font-family:'VT323', monospace;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow-x:hidden;
+    background:var(--bg1, #f5e9e2);
+    background-image: linear-gradient(160deg, var(--bg1, #f5e9e2) 0%, var(--bg2, #f9d9dc) 55%, var(--bg1, #f5e9e2) 100%);
+    background-size: 220% 220%;
+    animation: driftBg 22s ease-in-out infinite;
+    transition: background-color 1.2s ease;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    color: var(--ink);
+  }
+  @keyframes driftBg{
+    0%{background-position: 0% 30%;}
+    50%{background-position: 100% 70%;}
+    100%{background-position: 0% 30%;}
+  }
+  @media (prefers-reduced-motion: reduce){ body{animation:none;} }
+
+  #app{
+    width:100%;
+    max-width:420px;
+    padding: 28px 22px 40px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+  }
+
+  h1#loveMsg{
+    font-family:'Press Start 2P', monospace;
+    font-size: clamp(15px, 5.4vw, 22px);
+    line-height:1.7;
+    color: var(--fg, #7a2740);
+    margin: 0 0 22px;
+    letter-spacing: var(--tracking, 1px);
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.08);
+    opacity:0;
+    transform: translateY(-14px);
+    transition: opacity 900ms ease, transform 900ms ease;
+    cursor:default;
+    user-select:none;
+  }
+  h1#loveMsg.in{ opacity:1; transform: translateY(0); }
+  h1#loveMsg.pulse{ animation: msgPulse 520ms ease; }
+  @keyframes msgPulse{
+    0%{transform:scale(1);}
+    40%{transform:scale(1.12);}
+    100%{transform:scale(1);}
+  }
+
+  #bouquetWrap{
+    opacity:0;
+    transform: scale(.82) translateY(10px);
+    transition: opacity 1000ms ease 250ms, transform 1000ms cubic-bezier(.2,.8,.2,1) 250ms;
+    width: min(74vw, 280px);
+    filter: drop-shadow(0 10px 18px rgba(60,42,30,0.18));
+  }
+  #bouquetWrap.in{ opacity:1; transform: scale(1) translateY(0); }
+  #bouquetWrap:active canvas{ transform: scale(0.97); }
+  #bouquetCanvas{
+    width:100%;
+    height:auto;
+    display:block;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    cursor:pointer;
+    transition: transform 160ms ease;
+  }
+
+  #flowerName{
+    margin: 18px 0 4px;
+    font-size: clamp(20px, 6vw, 26px);
+    color: var(--fg, #7a2740);
+    opacity:0;
+    transition: opacity 800ms ease 500ms;
+  }
+  #flowerName.in{opacity:1;}
+
+  #dayTag{
+    margin: 0 0 20px;
+    font-size: 15px;
+    letter-spacing: 1px;
+    color: var(--fg, #7a2740);
+    opacity:.7;
+  }
+
+  button#knowMoreBtn{
+    font-family:'VT323', monospace;
+    font-size: 19px;
+    background: var(--card);
+    border: 3px solid var(--paper-deep);
+    box-shadow: 3px 3px 0 var(--paper-deep);
+    color: var(--ink);
+    padding: 10px 20px;
+    cursor:pointer;
+    opacity:0;
+    transition: opacity 800ms ease 650ms, transform 120ms ease, box-shadow 120ms ease;
+    border-radius: 2px;
+  }
+  button#knowMoreBtn.in{opacity:1;}
+  button#knowMoreBtn:hover{ transform: translate(1px,1px); box-shadow: 2px 2px 0 var(--paper-deep); }
+  button#knowMoreBtn:active{ transform: translate(3px,3px); box-shadow: 0 0 0 var(--paper-deep); }
+
+  #flowerDesc{
+    margin-top: 18px;
+    max-width: 340px;
+    background: var(--card);
+    border: 3px solid var(--paper-deep);
+    padding: 16px 18px;
+    font-size: 19px;
+    line-height:1.45;
+    color: var(--ink);
+    border-radius: 2px;
+    max-height:0;
+    opacity:0;
+    overflow:hidden;
+    transition: max-height 500ms ease, opacity 500ms ease, padding 500ms ease, margin 500ms ease;
+  }
+  #flowerDesc.open{ max-height: 260px; opacity:1; }
+  #flowerDesc .fname{ font-weight:bold; display:block; margin-bottom:6px; }
+
+  #footNote{ margin-top: 26px; font-size: 14px; opacity: .55; }
+</style>
+</head>
+<body>
+  <div id="app">
+    <h1 id="loveMsg">I LOVE YOU SM MWAH</h1>
+    <div id="bouquetWrap"><canvas id="bouquetCanvas" width="64" height="100"></canvas></div>
+    <p id="flowerName"></p>
+    <p id="dayTag"></p>
+    <button id="knowMoreBtn" type="button">know more about this flower</button>
+    <div id="flowerDesc"><span class="fname"></span><span class="fbody"></span></div>
+    <p id="footNote">a new bloom every day, thirty in all, then it starts again</p>
+  </div>
+
+<script>
+(function(){
+
+/* ---------- low-level pixel helper ---------- */
+function dot(ctx,x,y,color){ ctx.fillStyle=color; ctx.fillRect(Math.round(x),Math.round(y),1,1); }
+
+/* ---------- a real tapered petal shape: teardrop, narrow at base+tip, wide in the middle,
+   with a 1px darker outline band so it reads clearly at pixel scale ---------- */
+function drawPetal(ctx, cx, cy, angle, length, width, tipExp, main, shade){
+  const cosA = Math.cos(angle), sinA = Math.sin(angle);
+  const bound = Math.ceil(Math.max(length, width)) + 1;
+  for(let dy=-bound; dy<=bound; dy++){
+    for(let dx=-bound; dx<=bound; dx++){
+      const lx = dx*cosA + dy*sinA;
+      const ly = -dx*sinA + dy*cosA;
+      if(lx < 0 || lx > length) continue;
+      const t = lx/length;
+      const w = (width/2) * Math.pow(Math.sin(Math.PI*t), tipExp);
+      const ad = Math.abs(ly);
+      if(ad > w) continue;
+      const col = (ad > w-1.15) ? shade : main;
+      dot(ctx, cx+dx, cy+dy, col);
+    }
+  }
+}
+
+function drawCircle(ctx, cx, cy, r, main, shade){
+  const ir = Math.ceil(r);
+  for(let dy=-ir; dy<=ir; dy++){
+    for(let dx=-ir; dx<=ir; dx++){
+      const d = Math.sqrt(dx*dx+dy*dy);
+      if(d > r) continue;
+      dot(ctx, cx+dx, cy+dy, (d > r-1.1) ? shade : main);
+    }
+  }
+}
+
+function drawTexturedCircle(ctx, cx, cy, r, colorA, colorB, edge){
+  const ir = Math.ceil(r);
+  for(let dy=-ir; dy<=ir; dy++){
+    for(let dx=-ir; dx<=ir; dx++){
+      const d = Math.sqrt(dx*dx+dy*dy);
+      if(d > r) continue;
+      if(d > r-1.1){ dot(ctx, cx+dx, cy+dy, edge); continue; }
+      const checker = ((Math.round(dx*1.3)+Math.round(dy*1.3)) % 2 === 0);
+      dot(ctx, cx+dx, cy+dy, checker ? colorA : colorB);
+    }
+  }
+}
+
+/* ---------- flower shape builders (all use the petal primitive) ---------- */
+
+function drawRound(ctx, cx, cy, petals, layers, length, width, tipExp, main, shade, center){
+  for(let L=0; L<layers; L++){
+    const shrink = 1 - L*0.2;
+    const pl = length*shrink, pw = width*shrink;
+    const offset = (L%2)*(Math.PI/petals);
+    const tone = (L%2===0) ? main : shade;
+    for(let i=0;i<petals;i++){
+      const a = (i/petals)*Math.PI*2 + offset;
+      drawPetal(ctx, cx, cy, a, pl, pw, tipExp, tone, shade);
+    }
+  }
+  drawCircle(ctx, cx, cy, Math.max(3, length*0.24), center, shadeOf(center));
+}
+
+function drawRay(ctx, cx, cy, petals, length, width, tipExp, main, shade, center, textured){
+  for(let i=0;i<petals;i++){
+    const a = (i/petals)*Math.PI*2;
+    drawPetal(ctx, cx, cy, a, length, width, tipExp, main, shade);
+  }
+  const r = Math.max(3, length*0.32);
+  if(textured) drawTexturedCircle(ctx, cx, cy, r, center, shadeOf(center), shadeOf(center));
+  else drawCircle(ctx, cx, cy, r, center, shadeOf(center));
+}
+
+function drawCup(ctx, cx, cy, petals, length, width, tipExp, spread, main, shade, center){
+  const pivotY = cy + length*0.12;
+  const start = -Math.PI/2 - spread/2;
+  for(let i=0;i<petals;i++){
+    const a = petals===1 ? -Math.PI/2 : start + (i/(petals-1))*spread;
+    const tone = (i%2===0) ? main : shade;
+    drawPetal(ctx, cx, pivotY, a, length, width, tipExp, tone, shade);
+  }
+  drawCircle(ctx, cx, pivotY, Math.max(2, length*0.16), center, shadeOf(center));
+}
+
+function drawCluster(ctx, cx, cy, blooms, petalLen, petalW, tipExp, main, center, spots){
+  const use = spots.slice(0, blooms);
+  for(const [ox,oy] of use){
+    const bx = cx+ox, by = cy+oy;
+    for(let i=0;i<5;i++){
+      const a = (i/5)*Math.PI*2;
+      drawPetal(ctx, bx, by, a, petalLen, petalW, 0.7, main, shadeOf(main));
+    }
+    drawCircle(ctx, bx, by, 1.4, center, shadeOf(center));
+  }
+}
+
+function drawSpike(ctx, cx, topY, bottomY, rows, main, shade){
+  for(let y=Math.round(topY); y<=Math.round(bottomY); y++){ dot(ctx, cx, y, '#5c7a4e'); }
+  const step = (bottomY-topY)/rows;
+  for(let r=0;r<rows;r++){
+    const y = topY + r*step + 2;
+    const sizeT = 1 - r/(rows*1.6);
+    const len = 3.6*sizeT + 1.2, w = 3*sizeT + 1;
+    drawPetal(ctx, cx, y, -0.55, len, w, 0.6, main, shade);
+    drawPetal(ctx, cx, y, Math.PI+0.55, len, w, 0.6, shade, main);
+  }
+}
+
+function shadeOf(hex){
+  const h = hex.replace('#','');
+  const r = Math.max(0, parseInt(h.substr(0,2),16) - 40);
+  const g = Math.max(0, parseInt(h.substr(2,2),16) - 40);
+  const b = Math.max(0, parseInt(h.substr(4,2),16) - 40);
+  return '#' + [r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+/* ---------- fixed wrap: kraft paper cone + ribbon + heart tag + greenery + filler blooms ---------- */
+function drawWrap(ctx){
+  for(let y=58; y<=92; y++){
+    const t = (y-58)/(92-58);
+    const halfTop = 17, halfBottom = 3;
+    const half = halfTop + (halfBottom-halfTop)*t;
+    const cx = 32 + Math.sin(t*1.4)*1.2;
+    const left = Math.round(cx-half), right = Math.round(cx+half);
+    for(let x=left; x<=right; x++){
+      const edge = (x===left || x===right);
+      const shade = edge ? '#a9814f' : ( (x+y)%5===0 ? '#c9a97c' : '#dcc296');
+      dot(ctx, x, y, shade);
+    }
+  }
+  for(let y=60;y<=88;y++){ dot(ctx, 32, y, '#b8935f'); }
+
+  for(let y=76;y<=83;y++){ for(let x=25;x<=39;x++){ dot(ctx,x,y,'#fbf3e2'); } }
+  for(let x=25;x<=39;x++){ dot(ctx,x,76,'#c9a97c'); dot(ctx,x,83,'#c9a97c'); }
+  const heart = [[30,78],[31,78],[33,78],[34,78],[29,79],[32,79],[35,79],[30,80],[31,80],[32,80],[33,80],[34,80],[31,81],[32,81],[33,81],[32,82]];
+  for(const [x,y] of heart){ dot(ctx,x,y,'#8b5a3c'); }
+
+  const ribbon = '#d98a9e', ribbonShade='#b8637a';
+  for(let y=88;y<=96;y++){
+    const t=(y-88)/8;
+    const w = 8*(1-Math.abs(t-0.5)*1.4);
+    for(let x=32-Math.round(w)-2; x<=30; x++){ dot(ctx,x,y, (x+y)%4===0?ribbonShade:ribbon); }
+  }
+  for(let y=88;y<=96;y++){
+    const t=(y-88)/8;
+    const w = 8*(1-Math.abs(t-0.5)*1.4);
+    for(let x=34; x<=32+Math.round(w)+2; x++){ dot(ctx,x,y, (x+y)%4===0?ribbonShade:ribbon); }
+  }
+  for(let y=89;y<=95;y++){ for(let x=30;x<=34;x++){ dot(ctx,x,y, (x+y)%3===0?ribbonShade:ribbon); } }
+  for(let y=96;y<=104;y++){
+    dot(ctx, 29 - Math.round((y-96)*0.3), y, ribbon);
+    dot(ctx, 35 + Math.round((y-96)*0.3), y, ribbonShade);
+  }
+
+  const leafDark='#4f7a4a', leafLight='#7fae6b';
+  const leaves = [[14,52,6],[50,50,6],[10,44,5],[54,44,5],[20,40,4],[44,40,4]];
+  for(const [lx,ly,lr] of leaves){
+    for(let dy=-lr;dy<=lr;dy++){
+      const w = lr-Math.abs(dy);
+      for(let dx=-w;dx<=w;dx++){
+        if(Math.abs(dx)+Math.abs(dy) <= lr) dot(ctx, lx+dx, ly+dy, (dx+dy)%3===0?leafDark:leafLight);
+      }
+    }
+  }
+}
+
+const fillerSpots = [[-17,-13],[17,-15],[0,-23],[-11,-25],[13,-21]];
+function drawFillers(ctx, tint){
+  drawCluster(ctx, 32, 42, 4, 3.2, 2.6, 0.7, '#fbf7ee', tint, fillerSpots);
+}
+
+/* ---------- 30 flowers ---------- */
+const FLOWERS = [
+{ name:"Rose", shape:"round", petals:10, layers:3, length:13, width:11.5, tipExp:0.6, main:"#e4607d", shade:"#a83e56", center:"#7a2740",
+  bg1:"#fbe6ea", bg2:"#f6c3ce", fg:"#7a2740",
+  desc:"Roses only ever say one thing, so I'll let them say it for me today: I chose you, and I would choose you again, every single time." },
+{ name:"Tulip", shape:"cup", petals:6, length:15, width:11, tipExp:0.5, spread:2.6, main:"#e85d4f", shade:"#c23f34", center:"#f4b942",
+  bg1:"#ffe9df", bg2:"#ffcdb8", fg:"#8a3a26",
+  desc:"Tulips mean love with no ifs or buts attached. That's the only kind I know how to give you." },
+{ name:"Sunflower", shape:"ray", petals:18, length:15, width:3.2, tipExp:1.4, main:"#f5c242", shade:"#d89a1d", center:"#6b4322", textured:true,
+  bg1:"#fff3d6", bg2:"#ffe08a", fg:"#6b4a12",
+  desc:"You're the reason I turn toward the light on the bad days. Loyal, warm, a little dramatic — very on brand for us." },
+{ name:"Lily", shape:"cup", petals:6, length:16, width:8.8, tipExp:0.9, spread:5.0, main:"#fbe3ea", shade:"#f0b8cd", center:"#e08a3c",
+  bg1:"#f2eefb", bg2:"#e3d6f5", fg:"#5c4a7a",
+  desc:"Lilies stand for devotion that doesn't need an occasion. Mine's the same — it just happens to be a Tuesday." },
+{ name:"Daisy", shape:"ray", petals:14, length:13, width:2.8, tipExp:0.9, main:"#fbfbf4", shade:"#d9d6c2", center:"#f0c23a",
+  bg1:"#e6f2fb", bg2:"#cfe6f7", fg:"#2f5a70",
+  desc:"Simple, honest, a little goofy — daisies are basically the flower version of how easy it is to love you." },
+{ name:"Peony", shape:"round", petals:18, layers:4, length:12, width:11.4, tipExp:0.55, main:"#f7b8c4", shade:"#e08ba0", center:"#c96a80",
+  bg1:"#fdeef0", bg2:"#f7d4dd", fg:"#8a4a5c",
+  desc:"Peonies are what happens when a flower can't hold back how much it feels. I get it. Same." },
+{ name:"Orchid", shape:"cup", petals:5, length:14, width:9.8, tipExp:0.6, spread:5.6, main:"#a568c9", shade:"#7c3fa3", center:"#f0d24a",
+  bg1:"#efe4fb", bg2:"#d9c0f2", fg:"#5a2f7a",
+  desc:"Rare, a little exotic, worth the extra care — orchids remind me of how lucky I feel that you picked me back." },
+{ name:"Lavender", shape:"spike", rows:9, main:"#8a7cc7", shade:"#6a5aa8",
+  bg1:"#eceafb", bg2:"#d5d0f2", fg:"#4a4283",
+  desc:"Lavender is for the quiet kind of love — the calm you bring me just by being in the room." },
+{ name:"Poppy", shape:"cup", petals:4, length:16, width:15.2, tipExp:0.5, spread:4.2, main:"#e4432e", shade:"#b32d1c", center:"#241c14",
+  bg1:"#fdece0", bg2:"#f6c9ab", fg:"#7a2e17",
+  desc:"Poppies are bold and a little wild at the edges. You make my heart do that too, honestly." },
+{ name:"Carnation", shape:"round", petals:16, layers:3, length:10, width:6, tipExp:1.0, main:"#f2a3b4", shade:"#d97c92", center:"#9c4d63",
+  bg1:"#fdeaf0", bg2:"#f6cddb", fg:"#7a3a52",
+  desc:"Carnations mean pure and lasting affection. No fine print, no expiry date — just you." },
+{ name:"Iris", shape:"cup", petals:6, length:15, width:7.5, tipExp:0.7, spread:6.0, main:"#4b4e9e", shade:"#33356e", center:"#f0d24a",
+  bg1:"#e6e7f7", bg2:"#c6c8ec", fg:"#2e2f66",
+  desc:"Iris means hope and a message worth sending. Consider this mine, hand delivered." },
+{ name:"Hibiscus", shape:"cup", petals:5, length:15, width:12.8, tipExp:0.6, spread:5.4, main:"#e23e57", shade:"#b8283e", center:"#f7c94a",
+  bg1:"#fde6e9", bg2:"#f7bcc6", fg:"#7a2333",
+  desc:"Hibiscus is delicate beauty that doesn't ask permission to be noticed. Kind of like you walking into a room." },
+{ name:"Cherry Blossom", shape:"cluster", blooms:5, petalLen:4, petalW:3.4, main:"#f9c9d6", center:"#c96a80",
+  bg1:"#fdeef2", bg2:"#f7d6e0", fg:"#8a4a5c",
+  desc:"Cherry blossoms don't last long, so they don't waste a single day being beautiful. I try to love you like that." },
+{ name:"Marigold", shape:"ray", petals:22, length:11, width:2.9, tipExp:1.0, main:"#f2994a", shade:"#d97a25", center:"#8a4a12", textured:true,
+  bg1:"#fff0dc", bg2:"#ffd39b", fg:"#7a4712",
+  desc:"Marigolds mean warmth and a love that stays even when things get a little messy. That's my whole promise to you." },
+{ name:"Chrysanthemum", shape:"ray", petals:26, length:12, width:1.9, tipExp:1.3, main:"#d8c9e8", shade:"#b79cd6", center:"#7a5a9c",
+  bg1:"#f2edf9", bg2:"#ddd0f0", fg:"#5a4778",
+  desc:"Chrysanthemums stand for a joy that's built to last, not just the exciting first bit. I'm here for the long, boring, wonderful part too." },
+{ name:"Forget-Me-Not", shape:"cluster", blooms:7, petalLen:3.2, petalW:2.7, main:"#6fa8dc", center:"#f0d24a",
+  bg1:"#e8f1fb", bg2:"#c9e0f5", fg:"#2e5a7a",
+  desc:"They're tiny, but they're the whole point of the bouquet: I never do, not for a second." },
+{ name:"Anemone", shape:"round", petals:8, layers:1, length:14, width:13, tipExp:0.6, main:"#7a2048", shade:"#5c1636", center:"#1a1210",
+  bg1:"#f5e6ec", bg2:"#e3bfce", fg:"#5c1636",
+  desc:"Anemones mean anticipation — that little flip in my chest every single time I know I'm about to see you." },
+{ name:"Ranunculus", shape:"round", petals:22, layers:4, length:10, width:8.6, tipExp:0.6, main:"#f4a896", shade:"#df826a", center:"#c25c42",
+  bg1:"#fdedea", bg2:"#f6d2c6", fg:"#8a4632",
+  desc:"Ranunculus means I am dazzled by you. Every layer of this flower is a different reason why." },
+{ name:"Camellia", shape:"round", petals:10, layers:2, length:13, width:13, tipExp:0.55, main:"#c0304a", shade:"#8f2036", center:"#f0d24a",
+  bg1:"#f9e4e8", bg2:"#eeb9c4", fg:"#7a1c30",
+  desc:"Camellias mean my longing for you and my adoration of you, which is just a fancy way of saying: come home soon." },
+{ name:"Dahlia", shape:"ray", petals:20, length:13, width:2.9, tipExp:1.2, main:"#a63a50", shade:"#7c2438", center:"#f0d24a",
+  bg1:"#f7e6ea", bg2:"#e6b9c4", fg:"#5c1c2c",
+  desc:"Dahlias mean commitment and standing firm on it. So: still choosing you, still not going anywhere." },
+{ name:"Lotus", shape:"cup", petals:9, length:16, width:12.8, tipExp:0.6, spread:6.2, main:"#f6d3d9", shade:"#eab0bd", center:"#f0d24a",
+  bg1:"#f2f6fb", bg2:"#dceaf7", fg:"#3a5a7a",
+  desc:"The lotus rises soft and unbothered out of whatever mess it grew from. You do that for me, every day." },
+{ name:"Jasmine", shape:"cluster", blooms:6, petalLen:3.2, petalW:2.7, main:"#fbf7ee", center:"#f0d24a",
+  bg1:"#f5f1e0", bg2:"#e6dcc0", fg:"#5a4a2e",
+  desc:"Jasmine means attachment — the good kind, the kind where I just want you nearby, always, no real reason needed." },
+{ name:"Violet", shape:"cluster", blooms:4, petalLen:4, petalW:3.4, main:"#5b3a8e", center:"#f0d24a",
+  bg1:"#ece4f7", bg2:"#d2c0ec", fg:"#3a2560",
+  desc:"Violets are for a quiet, faithful kind of love — no grand speeches, just showing up for you, over and over." },
+{ name:"Buttercup", shape:"cup", petals:5, length:9, width:8.1, tipExp:0.5, spread:5.8, main:"#f7dc6f", shade:"#e0b93c", center:"#a8721c",
+  bg1:"#fdf6dc", bg2:"#f5e6a8", fg:"#7a5a1c",
+  desc:"Buttercups are for the childhood kind of joy — the kind you somehow still make me feel." },
+{ name:"Cosmos", shape:"ray", petals:8, length:13, width:4.4, tipExp:0.75, main:"#f2a6c0", shade:"#dc7a9c", center:"#f0d24a",
+  bg1:"#fdeaf1", bg2:"#f6c7dc", fg:"#8a3a5c",
+  desc:"Cosmos means harmony — how easy it is when it's us, even when the rest of the day was a mess." },
+{ name:"Gerbera Daisy", shape:"ray", petals:20, length:14, width:3.6, tipExp:1.0, main:"#f76c6c", shade:"#dc4a4a", center:"#f0d24a", textured:true,
+  bg1:"#fdeaea", bg2:"#f6c2c2", fg:"#8a2e2e",
+  desc:"Gerberas just mean cheerfulness, full stop. That's what you hand me, most days, without even trying." },
+{ name:"Freesia", shape:"cup", petals:6, length:11, width:6.6, tipExp:0.8, spread:4.0, main:"#faf0c6", shade:"#eedb8a", center:"#e08a3c",
+  bg1:"#fdf8e6", bg2:"#f5ecbc", fg:"#7a5a1c",
+  desc:"Freesia means trust that grew into something more. That's us, more or less, the whole story." },
+{ name:"Wisteria", shape:"spike", rows:10, main:"#8f7fd4", shade:"#6a58b3",
+  bg1:"#efeafc", bg2:"#d8ccf5", fg:"#4a3a8a",
+  desc:"Wisteria takes its time and then completely takes over everything. That's exactly what happened when I met you." },
+{ name:"Magnolia", shape:"cup", petals:8, length:17, width:11.9, tipExp:0.55, spread:5.6, main:"#fbeae5", shade:"#f0c9bd", center:"#c9946a",
+  bg1:"#fdf3ee", bg2:"#f6dccf", fg:"#8a5a3c",
+  desc:"Magnolias mean a love built to last, dignified and unshaken. So — still standing here, very sure of you." },
+{ name:"Bluebell", shape:"cluster", blooms:5, petalLen:4, petalW:3.2, main:"#5a7fd4", center:"#dce6f7",
+  bg1:"#e8eefc", bg2:"#c4d5f2", fg:"#2e4483",
+  desc:"Bluebells mean everlasting love, told a little quietly, a little shyly. Same energy as me trying to tell you this." },
+];
+
+/* ---------- render one flower onto the canvas ---------- */
+function render(ctx, f){
+  ctx.clearRect(0,0,64,100);
+  drawWrap(ctx);
+  drawFillers(ctx, f.center || f.main);
+  const cx=32, cy=38;
+  if(f.shape==="round") drawRound(ctx,cx,cy,f.petals,f.layers,f.length,f.width,f.tipExp,f.main,f.shade,f.center);
+  else if(f.shape==="ray") drawRay(ctx,cx,cy,f.petals,f.length,f.width,f.tipExp,f.main,f.shade,f.center,!!f.textured);
+  else if(f.shape==="cup") drawCup(ctx,cx,cy,f.petals,f.length,f.width,f.tipExp,f.spread,f.main,f.shade,f.center);
+  else if(f.shape==="cluster") drawCluster(ctx,cx,cy,f.blooms,f.petalLen,f.petalW,0.7,f.main,f.center,[[0,-2],[-9,4],[9,3],[-4,-10],[6,-9],[0,11]]);
+  else if(f.shape==="spike") drawSpike(ctx,cx,18,54,f.rows,f.main,f.shade);
+}
+
+/* ---------- pick today's flower ---------- */
+const day = new Date().getDate();
+const idx = (day - 1) % FLOWERS.length;
+const flower = FLOWERS[idx];
+
+const root = document.documentElement;
+root.style.setProperty('--bg1', flower.bg1);
+root.style.setProperty('--bg2', flower.bg2);
+root.style.setProperty('--fg', flower.fg);
+document.title = flower.name + " for you";
+
+const canvas = document.getElementById('bouquetCanvas');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+render(ctx, flower);
+
+document.getElementById('flowerName').textContent = "today's flower: " + flower.name;
+document.getElementById('dayTag').textContent = "bloom " + (idx+1) + " of " + FLOWERS.length;
+document.querySelector('#flowerDesc .fname').textContent = flower.name;
+document.querySelector('#flowerDesc .fbody').textContent = flower.desc;
+
+const heading = document.getElementById('loveMsg');
+heading.style.setProperty('--tracking', (idx % 3 === 0) ? '2px' : '1px');
+
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function reveal(){
+  heading.classList.add('in');
+  document.getElementById('bouquetWrap').classList.add('in');
+  document.getElementById('flowerName').classList.add('in');
+  document.getElementById('knowMoreBtn').classList.add('in');
+}
+if(reduced){ reveal(); } else { requestAnimationFrame(()=>setTimeout(reveal, 60)); }
+
+document.getElementById('bouquetWrap').addEventListener('click', function(){
+  heading.classList.remove('pulse');
+  void heading.offsetWidth;
+  heading.classList.add('pulse');
+});
+
+const btn = document.getElementById('knowMoreBtn');
+const desc = document.getElementById('flowerDesc');
+btn.addEventListener('click', function(){
+  const open = desc.classList.toggle('open');
+  btn.textContent = open ? 'okay, back to the bouquet' : 'know more about this flower';
+});
+
+})();
+</script>
+</body>
+</html>
